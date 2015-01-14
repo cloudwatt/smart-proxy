@@ -59,4 +59,14 @@ XMLRESPONSE
     server.expects(:virsh).returns('Updated')
     assert server.remove
   end
+
+  def test_nsupdate_removes_existing_cname
+    Proxy::Dns::Plugin.settings.stubs(:dns_key).returns(nil)
+    Proxy::Dns::Nsupdate.any_instance.stubs(:nsupdate).returns(true)
+    Resolv::DNS.any_instance.stubs(:getaddress).returns('not_existing2.example.com.')
+    Resolv::DNS.any_instance.stubs(:getaname).returns('not_existing.example.com')
+    server = Proxy::Dns::Nsupdate.new(:fqdn => 'not_existing.example.com', :type => 'cname',
+                                       :value => 'not_existing2.example.com.')
+    assert server.remove
+  end
 end

@@ -1,3 +1,5 @@
+require 'resolv'
+
 module Proxy::Dns
   class Api < ::Sinatra::Base
     helpers ::Proxy::Helpers
@@ -38,6 +40,12 @@ module Proxy::Dns
       log_halt 400, e
     end
 
+    def get_rr_type record, type
+      Resolv::DNS.open do |dns|
+        dns.getresources record, type
+      end
+    end
+
     post "/?" do
       fqdn  = params[:fqdn]
       value = params[:value]
@@ -59,6 +67,9 @@ module Proxy::Dns
         value = params[:value]
       else
         fqdn = params[:value]
+        if !get_rr_type(fqdn, Resolv::DNS::Resource::IN::CNAME).empty?
+          type = "CNAME"
+        end
       end
       begin
         dns_setup(:fqdn => fqdn, :value => value, :type => type)

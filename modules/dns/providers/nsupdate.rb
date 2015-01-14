@@ -32,6 +32,8 @@ module Proxy::Dns
           else
             nsupdate "update add #{@value}.  #{@ttl} IN #{@type} #{@fqdn}"
           end
+        when "CNAME"
+          nsupdate "update add #{@fqdn}.  #{@ttl} #{@type} #{@value}"
       end
       nsupdate "disconnect"
     ensure
@@ -44,7 +46,7 @@ module Proxy::Dns
 
       nsupdate "connect"
       case @type
-      when "A"
+      when "A", "CNAME"
         raise Proxy::Dns::NotFound.new("Cannot find DNS entry for #{@fqdn}") unless dns_find(@fqdn)
         nsupdate "update delete #{@fqdn} #{@type}"
       when "PTR"
